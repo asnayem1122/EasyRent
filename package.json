@@ -1,0 +1,14 @@
+{
+  "name": "easyrent",
+  "version": "1.0.0",
+  "description": "EasyRent - PERN Stack House & Flat Rental System",
+  "scripts": {
+    "start": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm run dev --prefix frontend",
+    "seed": "npm run seed --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
