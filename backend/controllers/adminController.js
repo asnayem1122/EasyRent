@@ -93,6 +93,7 @@ const getDashboardStats = async (req, res) => {
         COUNT(CASE WHEN role = 'owner' THEN 1 END) as owners,
         COUNT(CASE WHEN role = 'tenant' THEN 1 END) as tenants
       FROM users
+      WHERE role != 'admin'
     `);
 
     // Property counts
@@ -109,7 +110,7 @@ const getDashboardStats = async (req, res) => {
 
     res.status(200).json({
       users: {
-        total: parseInt(usersCount.rows[0].total) - 1, // Exclude the requesting admin
+        total: parseInt(usersCount.rows[0].total),
         owners: parseInt(usersCount.rows[0].owners),
         tenants: parseInt(usersCount.rows[0].tenants),
       },

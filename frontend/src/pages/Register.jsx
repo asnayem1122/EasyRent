@@ -79,12 +79,11 @@ const Register = () => {
               </div>
               <div className="col-md-6" style={inputStyle}>
                 <label className="form-label-custom">Register As</label>
-                <select className="form-select form-control-custom" name="role"
-                  value={formData.role} onChange={handleInputChange} required>
-                  <option value="tenant">Tenant (Search & Rent)</option>
-                  <option value="owner">Property Owner (List & Lease)</option>
-                  <option value="admin">Administrator</option>
-                </select>
+                  <select className="form-select form-control-custom" name="role"
+                    value={formData.role} onChange={handleInputChange} required>
+                    <option value="tenant">Tenant (Search & Rent)</option>
+                    <option value="owner">Property Owner (List & Lease)</option>
+                  </select>
               </div>
             </div>
 

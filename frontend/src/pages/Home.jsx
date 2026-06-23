@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { IMAGE_BASE_URL } from '../config';
 
 const Home = () => {
   const { user } = useAuth();
@@ -243,7 +244,7 @@ const Home = () => {
           <div className="row g-4">
             {properties.map(property => {
               const hasImage = property.main_image;
-              const imageSrc = hasImage ? `http://localhost:5000/${property.main_image}` : null;
+              const imageSrc = hasImage ? `${IMAGE_BASE_URL}${property.main_image}` : null;
 
               return (
                 <div key={property.property_id} className="col-md-6 col-lg-4">

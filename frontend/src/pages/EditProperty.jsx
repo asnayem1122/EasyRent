@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { IMAGE_BASE_URL } from '../config';
 
 const EditProperty = () => {
   const { id } = useParams();
@@ -27,6 +28,7 @@ const EditProperty = () => {
 
   const [existingImages, setExistingImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -84,7 +86,6 @@ const EditProperty = () => {
       await axios.delete(`/properties/image/${imageId}`);
       setExistingImages(prev => prev.filter(img => img.image_id !== imageId));
       setSuccess('Image deleted successfully.');
-      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError('Failed to delete image.');
       console.error(err);
@@ -115,7 +116,7 @@ const EditProperty = () => {
       const refresh = await axios.get(`/properties/${id}`);
       setExistingImages(refresh.data.images || []);
       setNewFiles([]);
-      e.target.querySelector('input[type="file"]').value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update property details.');
     } finally {
@@ -272,6 +273,7 @@ const EditProperty = () => {
                   multiple 
                   accept="image/*"
                   onChange={handleFileChange} 
+                  ref={fileInputRef}
                 />
                 <small className="text-muted mt-1 d-block">Supported file types: jpg, jpeg, png, webp</small>
               </div>
@@ -294,7 +296,7 @@ const EditProperty = () => {
               <div className="d-flex flex-column gap-3">
                 {existingImages.map((img) => (
                   <div key={img.image_id} className="position-relative border rounded overflow-hidden" style={{ height: '120px' }}>
-                    <img src={`http://localhost:5000/${img.image_path}`} alt="Listing item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={`${IMAGE_BASE_URL}${img.image_path}`} alt="Listing item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <button 
                       onClick={() => handleDeleteImage(img.image_id)} 
                       className="btn btn-sm btn-danger position-absolute"

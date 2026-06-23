@@ -10,7 +10,7 @@ const register = async (req, res) => {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
-  if (!['admin', 'owner', 'tenant'].includes(role)) {
+  if (!['owner', 'tenant'].includes(role)) {
     return res.status(400).json({ error: 'Invalid user role.' });
   }
 

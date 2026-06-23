@@ -93,7 +93,7 @@ cd EasyRent
 
 ### Step 2 — Database Setup
 
-Open PostgreSQL and create the database:
+Make sure PostgreSQL is running, then create the database:
 
 ```sql
 CREATE DATABASE house_rental_db;
@@ -121,27 +121,21 @@ JWT_SECRET=your_jwt_secret_key
 
 ---
 
-### Step 4 — Seed the Database
+### Step 4 — Install & Seed
+
+From the **project root**, a single command installs everything and sets up the database:
 
 ```bash
-# From the backend/ directory
-npm run seed
+npm install     # Installs root + backend + frontend deps
+npm run seed    # Creates tables & inserts demo data
 ```
-
-This creates all tables and inserts demo accounts with pre-hashed passwords.
 
 ---
 
-### Step 5 — Install Dependencies & Run
-
-From the **project root**, install all dependencies and start both servers together:
+### Step 5 — Run
 
 ```bash
-# Install root dependencies
-npm install
-
-# Start backend + frontend concurrently
-npm start
+npm start       # Starts backend (port 5000) + frontend (port 5173) concurrently
 ```
 
 Or run them separately:

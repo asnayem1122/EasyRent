@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { IMAGE_BASE_URL } from '../config';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -25,7 +26,7 @@ const PropertyDetails = () => {
       const res = await axios.get(`/properties/${id}`);
       setProperty(res.data);
       if (res.data.images && res.data.images.length > 0) {
-        setActiveImage(`http://localhost:5000/${res.data.images[0].image_path}`);
+        setActiveImage(`${IMAGE_BASE_URL}${res.data.images[0].image_path}`);
       } else {
         setActiveImage('placeholder');
       }
@@ -142,7 +143,7 @@ const PropertyDetails = () => {
             {property.images && property.images.length > 0 && (
               <div className="gallery-thumbs">
                 {property.images.map((img, index) => {
-                  const url = `http://localhost:5000/${img.image_path}`;
+                  const url = `${IMAGE_BASE_URL}${img.image_path}`;
                   return (
                     <div 
                       key={img.image_id} 

@@ -3,6 +3,7 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
+import { IMAGE_BASE_URL } from '../config';
 
 const Dashboard = () => {
   const { user, logout, updateProfileState } = useAuth();
@@ -218,7 +219,7 @@ const Dashboard = () => {
       
       <main className="dashboard-content">
         {/* TAB 1: Profile Tab */}
-        {activeTab === 'profile' && (
+        {(activeTab === 'profile' || (user.role === 'tenant' && activeTab === 'default')) && (
           <div className="card border-0 shadow-sm p-4" style={{ borderRadius: 'var(--radius-lg)', maxWidth: '700px' }}>
             <h2 className="fw-bold mb-4"><i className="fa-solid fa-user-gears text-primary me-2"></i> Account Profile</h2>
             
@@ -303,7 +304,7 @@ const Dashboard = () => {
               <div className="row g-4">
                 {favorites.map(property => {
                   const hasImage = property.main_image;
-                  const imageSrc = hasImage ? `http://localhost:5000/${property.main_image}` : 'placeholder';
+                  const imageSrc = hasImage ? `${IMAGE_BASE_URL}${property.main_image}` : 'placeholder';
 
                   return (
                     <div key={property.property_id} className="col-md-6 col-lg-4">
@@ -429,7 +430,7 @@ const Dashboard = () => {
                           <td>
                             <div className="d-flex align-items-center gap-3">
                               {p.main_image ? (
-                                <img src={`http://localhost:5000/${p.main_image}`} alt={p.title} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                <img src={`${IMAGE_BASE_URL}${p.main_image}`} alt={p.title} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                               ) : (
                                 <div className="bg-light text-muted d-flex align-items-center justify-content-center" style={{ width: '60px', height: '40px', borderRadius: '4px' }}>
                                   <i className="fa-regular fa-image"></i>
