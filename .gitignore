@@ -17,6 +17,8 @@ screenshots/
 .playwright/
 test_report.json
 test-pages.js
+test-*.js
+
 
 # Logs
 *.log
