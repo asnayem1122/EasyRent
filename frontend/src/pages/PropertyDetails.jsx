@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { IMAGE_BASE_URL } from '../config';
 
+import { MOCK_PROPERTIES } from '../mockData';
+
 const PropertyDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -26,12 +28,25 @@ const PropertyDetails = () => {
       const res = await axios.get(`/properties/${id}`);
       setProperty(res.data);
       if (res.data.images && res.data.images.length > 0) {
-        setActiveImage(`${IMAGE_BASE_URL}${res.data.images[0].image_path}`);
+        const firstImg = res.data.images[0].image_path;
+        setActiveImage(firstImg.startsWith('http') ? firstImg : `${IMAGE_BASE_URL}${firstImg}`);
+      } else if (res.data.main_image) {
+        setActiveImage(res.data.main_image.startsWith('http') ? res.data.main_image : `${IMAGE_BASE_URL}${res.data.main_image}`);
       } else {
         setActiveImage('placeholder');
       }
     } catch (err) {
-      console.error('Error fetching property details:', err);
+      console.warn('Backend API unavailable. Fetching demo property details:', err);
+      const mock = MOCK_PROPERTIES.find(p => String(p.property_id) === String(id)) || MOCK_PROPERTIES[0];
+      setProperty(mock);
+      if (mock && mock.images && mock.images.length > 0) {
+        const firstImg = mock.images[0].image_path;
+        setActiveImage(firstImg.startsWith('http') ? firstImg : `${IMAGE_BASE_URL}${firstImg}`);
+      } else if (mock && mock.main_image) {
+        setActiveImage(mock.main_image.startsWith('http') ? mock.main_image : `${IMAGE_BASE_URL}${mock.main_image}`);
+      } else {
+        setActiveImage('placeholder');
+      }
     } finally {
       setLoading(false);
     }
@@ -143,7 +158,7 @@ const PropertyDetails = () => {
             {property.images && property.images.length > 0 && (
               <div className="gallery-thumbs">
                 {property.images.map((img, index) => {
-                  const url = `${IMAGE_BASE_URL}${img.image_path}`;
+                  const url = img.image_path.startsWith('http') ? img.image_path : `${IMAGE_BASE_URL}${img.image_path}`;
                   return (
                     <div 
                       key={img.image_id} 

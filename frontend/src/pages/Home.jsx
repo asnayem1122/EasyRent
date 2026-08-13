@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { IMAGE_BASE_URL } from '../config';
 
+import { MOCK_PROPERTIES } from '../mockData';
+
 const Home = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -27,7 +29,26 @@ const Home = () => {
       const res = await axios.get(`/properties?${params.toString()}`);
       setProperties(res.data);
     } catch (err) {
-      console.error('Error fetching properties:', err);
+      console.warn('Backend API unavailable. Using demo dataset:', err);
+      // Filter mock properties for demo site
+      let filtered = [...MOCK_PROPERTIES];
+      if (searchFilters.location) {
+        filtered = filtered.filter(p => p.location.toLowerCase().includes(searchFilters.location.toLowerCase()));
+      }
+      if (searchFilters.property_type) {
+        filtered = filtered.filter(p => p.property_type === searchFilters.property_type);
+      }
+      if (searchFilters.rooms) {
+        const r = parseInt(searchFilters.rooms);
+        filtered = filtered.filter(p => r >= 4 ? p.rooms >= 4 : p.rooms === r);
+      }
+      if (searchFilters.rent_min) {
+        filtered = filtered.filter(p => p.rent >= Number(searchFilters.rent_min));
+      }
+      if (searchFilters.rent_max) {
+        filtered = filtered.filter(p => p.rent <= Number(searchFilters.rent_max));
+      }
+      setProperties(filtered);
     } finally {
       setLoading(false);
     }
@@ -41,7 +62,8 @@ const Home = () => {
         res.data.forEach(p => { favMap[p.property_id] = true; });
         setFavorites(favMap);
       } catch (err) {
-        console.error('Error fetching favorites:', err);
+        const savedFavs = JSON.parse(localStorage.getItem('demo_favorites') || '{}');
+        setFavorites(savedFavs);
       }
     }
   };
@@ -244,7 +266,7 @@ const Home = () => {
           <div className="row g-4">
             {properties.map(property => {
               const hasImage = property.main_image;
-              const imageSrc = hasImage ? `${IMAGE_BASE_URL}${property.main_image}` : null;
+              const imageSrc = hasImage ? (property.main_image.startsWith('http') ? property.main_image : `${IMAGE_BASE_URL}${property.main_image}`) : null;
 
               return (
                 <div key={property.property_id} className="col-md-6 col-lg-4">

@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import { IMAGE_BASE_URL } from '../config';
 
+import { MOCK_PROPERTIES, MOCK_USERS, MOCK_INQUIRIES, MOCK_STATS } from '../mockData';
+
 const Dashboard = () => {
   const { user, logout, updateProfileState } = useAuth();
   const navigate = useNavigate();
@@ -89,7 +91,18 @@ const Dashboard = () => {
           }
         }
       } catch (err) {
-        console.error('Error loading dashboard tab details:', err);
+        console.warn('Backend API unavailable. Using demo dashboard dataset:', err);
+        if (user.role === 'admin') {
+          if (activeTab === 'stats' || activeTab === 'default') setStats(MOCK_STATS);
+          else if (activeTab === 'properties') setProperties(MOCK_PROPERTIES);
+          else if (activeTab === 'users') setUsers(MOCK_USERS);
+        } else if (user.role === 'owner') {
+          if (activeTab === 'listings' || activeTab === 'default') setProperties(MOCK_PROPERTIES);
+          else if (activeTab === 'inquiries') setInquiries(MOCK_INQUIRIES);
+        } else if (user.role === 'tenant') {
+          if (activeTab === 'favorites') setFavorites(MOCK_PROPERTIES.slice(0, 2));
+          else if (activeTab === 'inquiries') setInquiries(MOCK_INQUIRIES);
+        }
       } finally {
         setLoading(false);
       }
@@ -304,7 +317,7 @@ const Dashboard = () => {
               <div className="row g-4">
                 {favorites.map(property => {
                   const hasImage = property.main_image;
-                  const imageSrc = hasImage ? `${IMAGE_BASE_URL}${property.main_image}` : 'placeholder';
+                  const imageSrc = hasImage ? (property.main_image.startsWith('http') ? property.main_image : `${IMAGE_BASE_URL}${property.main_image}`) : 'placeholder';
 
                   return (
                     <div key={property.property_id} className="col-md-6 col-lg-4">
@@ -430,7 +443,7 @@ const Dashboard = () => {
                           <td>
                             <div className="d-flex align-items-center gap-3">
                               {p.main_image ? (
-                                <img src={`${IMAGE_BASE_URL}${p.main_image}`} alt={p.title} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                <img src={p.main_image.startsWith('http') ? p.main_image : `${IMAGE_BASE_URL}${p.main_image}`} alt={p.title} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                               ) : (
                                 <div className="bg-light text-muted d-flex align-items-center justify-content-center" style={{ width: '60px', height: '40px', borderRadius: '4px' }}>
                                   <i className="fa-regular fa-image"></i>
