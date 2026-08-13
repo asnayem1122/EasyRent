@@ -7,6 +7,8 @@ import { MOCK_PROPERTIES } from '../mockData';
 
 import ScheduleTourModal from '../components/ScheduleTourModal';
 import RentCalculatorModal from '../components/RentCalculatorModal';
+import BDUtilityBreakdownCard from '../components/BDUtilityBreakdownCard';
+import DMPVerificationModal from '../components/DMPVerificationModal';
 import Toast from '../components/Toast';
 
 const PropertyDetails = () => {
@@ -22,6 +24,7 @@ const PropertyDetails = () => {
   // Modals & Toast State
   const [showTourModal, setShowTourModal] = useState(false);
   const [showCalcModal, setShowCalcModal] = useState(false);
+  const [showDmpModal, setShowDmpModal] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   // Inquiry form state
@@ -155,7 +158,7 @@ const PropertyDetails = () => {
   }
 
   return (
-    <div className="container my-5 flex-grow-1">
+    <div className="container my-4 flex-grow-1">
       <Toast toasts={toasts} />
 
       <div className="row g-4">
@@ -236,6 +239,17 @@ const PropertyDetails = () => {
               >
                 <i className="fa-solid fa-calculator"></i> Rent & Deposit Estimator
               </button>
+
+              <button
+                onClick={() => {
+                  if (!user) { navigate('/login'); return; }
+                  setShowDmpModal(true);
+                }}
+                className="btn btn-outline-success d-inline-flex align-items-center gap-2"
+                style={{ borderRadius: '50px', fontWeight: 600 }}
+              >
+                <i className="fa-solid fa-file-shield text-success"></i> DMP Police Form
+              </button>
             </div>
 
             {/* Amenities Grid */}
@@ -259,6 +273,9 @@ const PropertyDetails = () => {
               {property.description}
             </p>
           </div>
+
+          {/* BD Utility Breakdown Component */}
+          <BDUtilityBreakdownCard property={property} />
         </div>
 
         {/* Right Column: Contact & Inquiries */}
@@ -273,7 +290,7 @@ const PropertyDetails = () => {
               </div>
               <div>
                 <h5 className="fw-bold mb-0">{property.owner_name}</h5>
-                <span className="text-muted small">✓ Verified Owner</span>
+                <span className="text-success small fw-bold">✓ Verified NID Owner</span>
               </div>
             </div>
             
@@ -365,6 +382,13 @@ const PropertyDetails = () => {
         rentAmount={property.rent}
         show={showCalcModal}
         onClose={() => setShowCalcModal(false)}
+      />
+
+      <DMPVerificationModal
+        property={property}
+        user={user}
+        show={showDmpModal}
+        onClose={() => setShowDmpModal(false)}
       />
     </div>
   );

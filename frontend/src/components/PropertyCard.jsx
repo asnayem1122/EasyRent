@@ -31,6 +31,13 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite, isCompared, onTo
       <div className="property-img-wrapper position-relative">
         <span className="property-badge-type">{property.property_type}</span>
         
+        {/* Titas Gas Badge */}
+        {property.gas_supply === 'Titas Line Gas' && (
+          <span className="position-absolute top-0 start-0 m-2 badge bg-danger text-white rounded-pill px-2.5 py-1 small" style={{ zIndex: 2, fontSize: '0.72rem' }}>
+            🔥 Titas Gas
+          </span>
+        )}
+
         <span className={`property-badge-status ${property.status === 'Available' ? 'bg-success' : 'bg-secondary'}`}>
           {property.status}
         </span>
@@ -76,7 +83,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite, isCompared, onTo
       <div className="property-body d-flex flex-column flex-grow-1">
         <div className="d-flex justify-content-between align-items-center mb-1">
           <span style={{ fontSize: '0.78rem', color: 'var(--primary-color)', fontWeight: 700 }}>
-            <i className="fa-solid fa-circle-check me-1"></i>Verified Owner
+            <i className="fa-solid fa-circle-check me-1"></i>Verified BD Listing
           </span>
           {onToggleCompare && (
             <label className="d-flex align-items-center gap-1 style-pointer small text-muted" style={{ cursor: 'pointer', fontSize: '0.8rem' }}>
@@ -95,9 +102,19 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite, isCompared, onTo
           <Link to={`/property/${property.property_id}`}>{property.title}</Link>
         </h3>
 
-        <div className="property-location">
+        <div className="property-location mb-1">
           <i className="fa-solid fa-location-dot" style={{ color: 'var(--primary-color)' }}></i>{' '}
           {property.location}
+        </div>
+
+        {/* BD Specific Highlights Pill Tag */}
+        <div className="d-flex align-items-center gap-1 mb-2 flex-wrap" style={{ fontSize: '0.75rem' }}>
+          <span className="badge bg-light text-dark border px-2 py-1 rounded-pill">
+            👨‍👩‍👧 {property.tenant_category || 'Family Only'}
+          </span>
+          <span className="badge bg-light text-primary border px-2 py-1 rounded-pill">
+            + ৳{Number(property.service_charge || 3500).toLocaleString()} Service
+          </span>
         </div>
 
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1rem', lineHeight: 1.6, flexGrow: 1 }}>
@@ -108,7 +125,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite, isCompared, onTo
 
         <div className="property-amenities mt-auto">
           <span><i className="fa-solid fa-bed me-1" style={{ color: 'var(--primary-color)' }}></i>{property.rooms} Rooms</span>
-          <span><i className="fa-solid fa-bath me-1" style={{ color: 'var(--primary-color)' }}></i>{property.bathrooms} Bathrooms</span>
+          <span><i className="fa-solid fa-bath me-1" style={{ color: 'var(--primary-color)' }}></i>{property.bathrooms} Baths</span>
         </div>
 
         <Link to={`/property/${property.property_id}`} className="btn btn-secondary-custom w-100 mt-3" style={{ padding: '0.7rem' }}>

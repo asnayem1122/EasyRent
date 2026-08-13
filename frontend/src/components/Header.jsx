@@ -14,72 +14,57 @@ const Header = () => {
     navigate('/');
   };
 
-  const isLinkActive = (path) => location.pathname === path ? 'active' : '';
+  const isLinkActive = (path) => location.pathname === path ? 'active-dock' : '';
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-custom sticky-top">
-      <div className="container d-flex justify-content-between align-items-center">
-        <Link className="navbar-brand" to="/" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
-          <i className="fa-solid fa-house-chimney" style={{ color: 'var(--primary-color)', marginRight: '8px' }}></i>
-          Easy Rent
+    <header className="dock-navbar-wrapper">
+      <div className="dock-navbar">
+        {/* Brand Logo Pill */}
+        <Link to="/" className="dock-logo">
+          <i className="fa-solid fa-house-chimney text-primary me-2"></i>
+          <span>EasyRent</span>
+          <span className="dock-bd-badge ms-2">🇧🇩 BD</span>
         </Link>
 
-        <div className="d-flex align-items-center gap-3">
-          <ul className="navbar-nav d-flex flex-row gap-1 mb-0 list-unstyled me-2">
-            <li className="nav-item">
-              <Link className={`nav-link-custom ${isLinkActive('/')}`} to="/">Home</Link>
-            </li>
-          </ul>
+        {/* Center Navigation Links */}
+        <nav className="dock-nav-items">
+          <Link to="/" className={`dock-item ${isLinkActive('/')}`}>
+            <i className="fa-solid fa-compass me-1"></i>Explore
+          </Link>
+          {user && (
+            <Link to="/dashboard" className={`dock-item ${isLinkActive('/dashboard')}`}>
+              <i className="fa-solid fa-gauge me-1"></i>Dashboard
+            </Link>
+          )}
+        </nav>
 
-          <div className="d-flex align-items-center gap-2">
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              title="Toggle Dark/Light Mode"
-              style={{
-                width: '40px', height: '40px',
-                borderRadius: '50%',
-                border: '1px solid var(--glass-border)',
-                background: 'var(--card-bg)',
-                backdropFilter: 'blur(10px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'var(--transition)',
-                color: 'var(--text-primary)',
-                fontSize: '1rem',
-              }}
-            >
-              {theme === 'dark'
-                ? <i className="fa-solid fa-sun" style={{ color: '#f59e0b' }}></i>
-                : <i className="fa-solid fa-moon"></i>}
-            </button>
+        {/* Right Action Icons & Auth */}
+        <div className="dock-actions">
+          {/* Theme Toggle */}
+          <button onClick={toggleTheme} className="dock-icon-btn" title="Toggle Theme">
+            {theme === 'dark'
+              ? <i className="fa-solid fa-sun text-warning"></i>
+              : <i className="fa-solid fa-moon"></i>}
+          </button>
 
-            {user ? (
-              <>
-                <span className="text-muted d-none d-md-inline small" style={{ color: 'var(--text-secondary)' }}>
-                  Welcome, <strong style={{ color: 'var(--text-primary)' }}>{user.name}</strong>
-                </span>
-                <Link to="/dashboard" className="btn btn-primary-custom btn-sm">
-                  <i className="fa-solid fa-gauge"></i> Dashboard
-                </Link>
-                <button onClick={handleLogout} className="btn btn-secondary-custom btn-sm">
-                  <i className="fa-solid fa-right-from-bracket"></i> Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="btn btn-secondary-custom btn-sm">
-                  <i className="fa-solid fa-right-to-bracket"></i> Login
-                </Link>
-                <Link to="/register" className="btn btn-primary-custom btn-sm">
-                  <i className="fa-solid fa-user-plus"></i> Register
-                </Link>
-              </>
-            )}
-          </div>
+          {user ? (
+            <div className="d-flex align-items-center gap-2">
+              <span className="dock-user-badge d-none d-md-inline">
+                {user.name.split(' ')[0]}
+              </span>
+              <button onClick={handleLogout} className="dock-btn-secondary" title="Logout">
+                <i className="fa-solid fa-right-from-bracket me-1"></i>Logout
+              </button>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center gap-2">
+              <Link to="/login" className="dock-btn-secondary">Login</Link>
+              <Link to="/register" className="dock-btn-primary">Register</Link>
+            </div>
+          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

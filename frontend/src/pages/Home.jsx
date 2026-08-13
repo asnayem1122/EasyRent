@@ -21,6 +21,7 @@ const Home = () => {
   // New UI states
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'map'
   const [sortBy, setSortBy] = useState('default');
+  const [selectedCategoryPill, setSelectedCategoryPill] = useState('all');
   const [compareList, setCompareList] = useState([]);
   const [toasts, setToasts] = useState([]);
 
@@ -47,7 +48,7 @@ const Home = () => {
       const res = await axios.get(`/properties?${params.toString()}`);
       setProperties(res.data);
     } catch (err) {
-      console.warn('Backend API unavailable. Using demo dataset:', err);
+      console.warn('Backend API unavailable. Using BD demo dataset:', err);
       let filtered = [...MOCK_PROPERTIES];
       if (searchFilters.location) {
         filtered = filtered.filter(p => p.location.toLowerCase().includes(searchFilters.location.toLowerCase()));
@@ -104,6 +105,7 @@ const Home = () => {
     const reset = { location: '', property_type: '', rooms: '', rent_min: '', rent_max: '' };
     setFilters(reset);
     setActiveSearch(false);
+    setSelectedCategoryPill('all');
     fetchProperties(reset);
     addToast('Search filters reset', 'fa-solid fa-rotate-left');
   };
@@ -119,7 +121,6 @@ const Home = () => {
       setFavorites(prev => ({ ...prev, [propertyId]: res.data.favorited }));
       addToast(res.data.favorited ? 'Saved to Favorites ❤️' : 'Removed from Favorites', 'fa-solid fa-heart', '#fb7185');
     } catch (err) {
-      // Demo fallback
       const savedFavs = JSON.parse(localStorage.getItem('demo_favorites') || '{}');
       const isCurrentlyFav = !!savedFavs[propertyId];
       savedFavs[propertyId] = !isCurrentlyFav;
@@ -144,8 +145,17 @@ const Home = () => {
     }
   };
 
+  // Category Pill Filter
+  const categoryFilteredProperties = properties.filter(p => {
+    if (selectedCategoryPill === 'titas') return p.gas_supply === 'Titas Line Gas';
+    if (selectedCategoryPill === 'metro') return p.metro_distance && p.metro_distance.toLowerCase().includes('metro');
+    if (selectedCategoryPill === 'bachelor') return p.tenant_category && p.tenant_category.toLowerCase().includes('bachelor');
+    if (selectedCategoryPill === 'villas') return p.property_type === 'House';
+    return true;
+  });
+
   // Sort property list
-  const sortedProperties = [...properties].sort((a, b) => {
+  const sortedProperties = [...categoryFilteredProperties].sort((a, b) => {
     if (sortBy === 'price-asc') return a.rent - b.rent;
     if (sortBy === 'price-desc') return b.rent - a.rent;
     if (sortBy === 'rooms') return b.rooms - a.rooms;
@@ -157,7 +167,7 @@ const Home = () => {
       <Toast toasts={toasts} />
 
       {/* ── Hero Section ── */}
-      <section className="hero-section text-center position-relative">
+      <section className="hero-section text-center position-relative pt-4">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-lg-9">
@@ -169,7 +179,7 @@ const Home = () => {
                 padding: '6px 18px', marginBottom: '1.5rem',
                 fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600
               }}>
-                <span style={{ color: 'var(--primary-color)' }}>●</span> Bangladesh's #1 Rental Platform
+                <span style={{ color: '#10b981' }}>●</span> Bangladesh's Premier Rental Platform
               </div>
 
               <h1 style={{
@@ -177,46 +187,33 @@ const Home = () => {
                 lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.2rem',
                 color: 'var(--text-primary)'
               }}>
-                Find Your Next{' '}
+                Find Your Sanctuary in{' '}
                 <span style={{
-                  background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
+                  background: 'linear-gradient(135deg, var(--primary-color), #10b981)',
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
                 }}>
-                  Perfect Home
+                  Bangladesh
                 </span>
               </h1>
 
               <p style={{
                 fontSize: '1.15rem', color: 'var(--text-secondary)',
-                maxWidth: '560px', margin: '0 auto 2rem', lineHeight: 1.7
+                maxWidth: '600px', margin: '0 auto 2rem', lineHeight: 1.7
               }}>
-                Discover verified rental houses and flats in prime locations across Bangladesh. Simple, fast, and secure.
+                Verified flats and houses with Titas gas line, 24/7 generator backup, Metro Rail proximity, and transparent service charges in Dhaka, Chittagong & Sylhet.
               </p>
 
               {/* Floating Pill Badges */}
               <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
                 <span className="badge bg-white bg-opacity-50 text-dark border px-3 py-2 rounded-pill shadow-sm">
-                  ⚡ 500+ Verified Listings
+                  🔥 Titas Line Gas Verified
                 </span>
                 <span className="badge bg-white bg-opacity-50 text-dark border px-3 py-2 rounded-pill shadow-sm">
-                  ⭐ 4.9/5 Rating
+                  🚆 MRT Metro Station Near
                 </span>
                 <span className="badge bg-white bg-opacity-50 text-dark border px-3 py-2 rounded-pill shadow-sm">
-                  🔒 Verified Owners
+                  🛡️ 100% DMP Verification Ready
                 </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                {!user && (
-                  <>
-                    <Link to="/register" className="btn btn-primary-custom" style={{ padding: '0.9rem 2rem', fontSize: '1rem' }}>
-                      <i className="fa-solid fa-rocket me-2"></i>Get Started Free
-                    </Link>
-                    <Link to="/login" className="btn btn-secondary-custom" style={{ padding: '0.9rem 2rem', fontSize: '1rem' }}>
-                      <i className="fa-solid fa-right-to-bracket me-2"></i>Sign In
-                    </Link>
-                  </>
-                )}
               </div>
             </div>
           </div>
@@ -234,7 +231,7 @@ const Home = () => {
                 </label>
                 <input
                   type="text" className="form-control form-control-custom"
-                  name="location" placeholder="e.g. Dhaka, Chittagong"
+                  name="location" placeholder="e.g. Gulshan, Dhanmondi, Uttara"
                   value={filters.location} onChange={handleInputChange}
                 />
               </div>
@@ -244,8 +241,8 @@ const Home = () => {
                 <select className="form-select form-control-custom" name="property_type"
                   value={filters.property_type} onChange={handleInputChange}>
                   <option value="">Any Type</option>
-                  <option value="House">House</option>
                   <option value="Flat">Flat</option>
+                  <option value="House">House / Villa</option>
                 </select>
               </div>
 
@@ -294,6 +291,40 @@ const Home = () => {
             )}
           </form>
         </div>
+
+        {/* ── Category Quick Filter Pills (nor.ma style) ── */}
+        <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-4">
+          <button
+            onClick={() => setSelectedCategoryPill('all')}
+            className={`btn btn-sm rounded-pill px-3 py-1.5 ${selectedCategoryPill === 'all' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+          >
+            All Listings
+          </button>
+          <button
+            onClick={() => setSelectedCategoryPill('titas')}
+            className={`btn btn-sm rounded-pill px-3 py-1.5 ${selectedCategoryPill === 'titas' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+          >
+            🔥 Titas Line Gas
+          </button>
+          <button
+            onClick={() => setSelectedCategoryPill('metro')}
+            className={`btn btn-sm rounded-pill px-3 py-1.5 ${selectedCategoryPill === 'metro' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+          >
+            🚆 Near Metro Rail
+          </button>
+          <button
+            onClick={() => setSelectedCategoryPill('bachelor')}
+            className={`btn btn-sm rounded-pill px-3 py-1.5 ${selectedCategoryPill === 'bachelor' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+          >
+            🎓 Bachelor Friendly
+          </button>
+          <button
+            onClick={() => setSelectedCategoryPill('villas')}
+            className={`btn btn-sm rounded-pill px-3 py-1.5 ${selectedCategoryPill === 'villas' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+          >
+            🏡 Luxury Duplex Villas
+          </button>
+        </div>
       </div>
 
       {/* ── Toolbar: View Mode & Sorting ── */}
@@ -301,7 +332,7 @@ const Home = () => {
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div className="d-flex align-items-center gap-3">
             <h2 style={{ fontWeight: 800, margin: 0, fontSize: '1.75rem', color: 'var(--text-primary)' }}>
-              Featured Listings
+              Featured Listings in Bangladesh
             </h2>
             <span style={{
               background: 'var(--card-bg)', backdropFilter: 'blur(10px)',
@@ -323,8 +354,8 @@ const Home = () => {
                 style={{ width: 'auto' }}
               >
                 <option value="default">Featured First</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
+                <option value="price-asc">Rent: Low to High</option>
+                <option value="price-desc">Rent: High to Low</option>
                 <option value="rooms">Most Rooms</option>
               </select>
             </div>
@@ -369,7 +400,7 @@ const Home = () => {
           <div className="card text-center" style={{ padding: '4rem 2rem' }}>
             <i className="fa-regular fa-folder-open fa-4x" style={{ color: 'var(--text-secondary)', opacity: 0.4, marginBottom: '1.5rem' }}></i>
             <h4 style={{ fontWeight: 700, color: 'var(--text-primary)' }}>No Properties Found</h4>
-            <p style={{ color: 'var(--text-secondary)' }}>Try broadening your search criteria.</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Try broadening your search criteria or category filter.</p>
             <button onClick={handleResetFilters} className="btn btn-primary-custom" style={{ margin: '0 auto', padding: '0.8rem 2rem' }}>
               Browse All Properties
             </button>
