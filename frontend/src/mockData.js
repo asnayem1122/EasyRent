@@ -163,8 +163,18 @@ export const MOCK_INQUIRIES = [
 ];
 
 export const MOCK_STATS = {
-  totalUsers: 148,
-  totalProperties: 42,
-  pendingApprovals: 3,
-  totalInquiries: 89
+  users: {
+    total: 148,
+    owners: 42,
+    tenants: 104,
+    admins: 2
+  },
+  properties: {
+    total: 42,
+    active: 39,
+    pending: 3
+  },
+  inquiries: {
+    total: 89
+  }
 };
