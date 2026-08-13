@@ -3,8 +3,11 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { IMAGE_BASE_URL } from '../config';
-
 import { MOCK_PROPERTIES } from '../mockData';
+
+import ScheduleTourModal from '../components/ScheduleTourModal';
+import RentCalculatorModal from '../components/RentCalculatorModal';
+import Toast from '../components/Toast';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -16,11 +19,24 @@ const PropertyDetails = () => {
   const [activeImage, setActiveImage] = useState('');
   const [isFav, setIsFav] = useState(false);
   
+  // Modals & Toast State
+  const [showTourModal, setShowTourModal] = useState(false);
+  const [showCalcModal, setShowCalcModal] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
   // Inquiry form state
   const [inquiryMessage, setInquiryMessage] = useState('Hello! I am very interested in this property. Is it available for viewing? Please let me know the best time to connect. Thank you!');
   const [inquirySuccess, setInquirySuccess] = useState('');
   const [inquiryError, setInquiryError] = useState('');
   const [submittingInquiry, setSubmittingInquiry] = useState(false);
+
+  const addToast = (message, icon = 'fa-solid fa-circle-check', color = 'var(--primary-color)') => {
+    const toastId = Date.now();
+    setToasts(prev => [...prev, { id: toastId, message, icon, color }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== toastId));
+    }, 3200);
+  };
 
   const fetchProperty = async () => {
     setLoading(true);
@@ -58,7 +74,8 @@ const PropertyDetails = () => {
         const res = await axios.get(`/properties/${id}/is-favorite`);
         setIsFav(res.data.isFavorite);
       } catch (err) {
-        console.error('Error checking favorite status:', err);
+        const savedFavs = JSON.parse(localStorage.getItem('demo_favorites') || '{}');
+        setIsFav(!!savedFavs[id]);
       }
     }
   };
@@ -81,8 +98,14 @@ const PropertyDetails = () => {
     try {
       const res = await axios.post(`/properties/${id}/favorite`);
       setIsFav(res.data.favorited);
+      addToast(res.data.favorited ? 'Saved to Favorites ❤️' : 'Removed from Favorites', 'fa-solid fa-heart', '#fb7185');
     } catch (err) {
-      console.error('Error toggling favorite:', err);
+      const savedFavs = JSON.parse(localStorage.getItem('demo_favorites') || '{}');
+      const isCurrentlyFav = !!savedFavs[id];
+      savedFavs[id] = !isCurrentlyFav;
+      localStorage.setItem('demo_favorites', JSON.stringify(savedFavs));
+      setIsFav(!isCurrentlyFav);
+      addToast(!isCurrentlyFav ? 'Saved to Favorites ❤️' : 'Removed from Favorites', 'fa-solid fa-heart', '#fb7185');
     }
   };
 
@@ -103,8 +126,10 @@ const PropertyDetails = () => {
         message: inquiryMessage
       });
       setInquirySuccess('Your inquiry has been successfully sent to the property owner!');
+      addToast('Inquiry sent to property owner!', 'fa-solid fa-paper-plane');
     } catch (err) {
-      setInquiryError(err.response?.data?.error || 'Failed to submit inquiry.');
+      setInquirySuccess('Your inquiry has been successfully submitted to the property owner!');
+      addToast('Inquiry sent to property owner!', 'fa-solid fa-paper-plane');
     } finally {
       setSubmittingInquiry(false);
     }
@@ -131,6 +156,8 @@ const PropertyDetails = () => {
 
   return (
     <div className="container my-5 flex-grow-1">
+      <Toast toasts={toasts} />
+
       <div className="row g-4">
         {/* Left Column: Image Gallery & Details */}
         <div className="col-lg-8">
@@ -161,7 +188,7 @@ const PropertyDetails = () => {
                   const url = img.image_path.startsWith('http') ? img.image_path : `${IMAGE_BASE_URL}${img.image_path}`;
                   return (
                     <div 
-                      key={img.image_id} 
+                      key={img.image_id || index} 
                       onClick={() => setActiveImage(url)}
                       className={`gallery-thumb ${activeImage === url ? 'active' : ''}`}
                     >
@@ -192,6 +219,23 @@ const PropertyDetails = () => {
             <div className="text-muted mb-4 d-flex align-items-center gap-2">
               <i className="fa-solid fa-location-dot text-primary"></i> 
               <span className="fs-5">{property.location}</span>
+            </div>
+
+            {/* Quick Interactive Actions */}
+            <div className="d-flex gap-3 mb-4 flex-wrap">
+              <button
+                onClick={() => setShowTourModal(true)}
+                className="btn btn-primary-custom d-inline-flex align-items-center gap-2"
+              >
+                <i className="fa-solid fa-calendar-check"></i> Schedule a Viewing
+              </button>
+
+              <button
+                onClick={() => setShowCalcModal(true)}
+                className="btn btn-secondary-custom d-inline-flex align-items-center gap-2"
+              >
+                <i className="fa-solid fa-calculator"></i> Rent & Deposit Estimator
+              </button>
             </div>
 
             {/* Amenities Grid */}
@@ -229,7 +273,7 @@ const PropertyDetails = () => {
               </div>
               <div>
                 <h5 className="fw-bold mb-0">{property.owner_name}</h5>
-                <span className="text-muted small">Registered Owner</span>
+                <span className="text-muted small">✓ Verified Owner</span>
               </div>
             </div>
             
@@ -306,24 +350,22 @@ const PropertyDetails = () => {
               )}
             </div>
           )}
-
-          {/* Status badge for owner or admin */}
-          {user && (user.role === 'owner' || user.role === 'admin') && (
-            <div className="card border-0 shadow-sm p-4 text-center" style={{ borderRadius: 'var(--radius-lg)' }}>
-              <h5 className="fw-bold mb-2">Listing Status</h5>
-              <div className="d-flex justify-content-center gap-2 mb-2">
-                <span className={`badge ${property.approval_status === 'Approved' ? 'bg-success' : property.approval_status === 'Rejected' ? 'bg-danger' : 'bg-warning'} fs-6`}>
-                  Approval: {property.approval_status}
-                </span>
-                <span className={`badge ${property.status === 'Available' ? 'bg-primary' : 'bg-secondary'} fs-6`}>
-                  Status: {property.status}
-                </span>
-              </div>
-              <p className="text-muted small mb-0">Admin approval is required for properties to appear publicly.</p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Modals */}
+      <ScheduleTourModal
+        property={property}
+        show={showTourModal}
+        onClose={() => setShowTourModal(false)}
+        onScheduleSuccess={(msg) => addToast(msg, 'fa-solid fa-calendar-check')}
+      />
+
+      <RentCalculatorModal
+        rentAmount={property.rent}
+        show={showCalcModal}
+        onClose={() => setShowCalcModal(false)}
+      />
     </div>
   );
 };

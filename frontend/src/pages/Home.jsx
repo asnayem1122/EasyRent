@@ -3,8 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { IMAGE_BASE_URL } from '../config';
-
 import { MOCK_PROPERTIES } from '../mockData';
+
+import PropertyCard from '../components/PropertyCard';
+import CompareDrawer from '../components/CompareDrawer';
+import MapView from '../components/MapView';
+import Toast from '../components/Toast';
 
 const Home = () => {
   const { user } = useAuth();
@@ -14,10 +18,24 @@ const Home = () => {
   const [favorites, setFavorites] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // New UI states
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'map'
+  const [sortBy, setSortBy] = useState('default');
+  const [compareList, setCompareList] = useState([]);
+  const [toasts, setToasts] = useState([]);
+
   const [filters, setFilters] = useState({
     location: '', property_type: '', rooms: '', rent_min: '', rent_max: ''
   });
   const [activeSearch, setActiveSearch] = useState(false);
+
+  const addToast = (message, icon = 'fa-solid fa-circle-check', color = 'var(--primary-color)') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, icon, color }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3200);
+  };
 
   const fetchProperties = async (searchFilters = {}) => {
     setLoading(true);
@@ -30,7 +48,6 @@ const Home = () => {
       setProperties(res.data);
     } catch (err) {
       console.warn('Backend API unavailable. Using demo dataset:', err);
-      // Filter mock properties for demo site
       let filtered = [...MOCK_PROPERTIES];
       if (searchFilters.location) {
         filtered = filtered.filter(p => p.location.toLowerCase().includes(searchFilters.location.toLowerCase()));
@@ -80,6 +97,7 @@ const Home = () => {
     e.preventDefault();
     setActiveSearch(true);
     fetchProperties(filters);
+    addToast('Search filters applied!', 'fa-solid fa-magnifying-glass');
   };
 
   const handleResetFilters = () => {
@@ -87,6 +105,7 @@ const Home = () => {
     setFilters(reset);
     setActiveSearch(false);
     fetchProperties(reset);
+    addToast('Search filters reset', 'fa-solid fa-rotate-left');
   };
 
   const handleToggleFavorite = async (propertyId, e) => {
@@ -94,18 +113,51 @@ const Home = () => {
     e.stopPropagation();
     if (!user) { navigate('/login'); return; }
     if (user.role !== 'tenant') return;
+
     try {
       const res = await axios.post(`/properties/${propertyId}/favorite`);
       setFavorites(prev => ({ ...prev, [propertyId]: res.data.favorited }));
+      addToast(res.data.favorited ? 'Saved to Favorites ❤️' : 'Removed from Favorites', 'fa-solid fa-heart', '#fb7185');
     } catch (err) {
-      console.error('Error toggling favorite:', err);
+      // Demo fallback
+      const savedFavs = JSON.parse(localStorage.getItem('demo_favorites') || '{}');
+      const isCurrentlyFav = !!savedFavs[propertyId];
+      savedFavs[propertyId] = !isCurrentlyFav;
+      localStorage.setItem('demo_favorites', JSON.stringify(savedFavs));
+      setFavorites({ ...savedFavs });
+      addToast(!isCurrentlyFav ? 'Saved to Favorites ❤️' : 'Removed from Favorites', 'fa-solid fa-heart', '#fb7185');
     }
   };
 
+  const handleToggleCompare = (property) => {
+    const exists = compareList.some(p => p.property_id === property.property_id);
+    if (exists) {
+      setCompareList(prev => prev.filter(p => p.property_id !== property.property_id));
+      addToast(`Removed ${property.title.substring(0, 20)}... from comparison`, 'fa-solid fa-minus');
+    } else {
+      if (compareList.length >= 3) {
+        addToast('You can compare a maximum of 3 properties!', 'fa-solid fa-triangle-exclamation', 'var(--secondary-color)');
+        return;
+      }
+      setCompareList(prev => [...prev, property]);
+      addToast(`Added to Compare (${compareList.length + 1}/3)`, 'fa-solid fa-code-compare');
+    }
+  };
+
+  // Sort property list
+  const sortedProperties = [...properties].sort((a, b) => {
+    if (sortBy === 'price-asc') return a.rent - b.rent;
+    if (sortBy === 'price-desc') return b.rent - a.rent;
+    if (sortBy === 'rooms') return b.rooms - a.rooms;
+    return 0;
+  });
+
   return (
     <div>
+      <Toast toasts={toasts} />
+
       {/* ── Hero Section ── */}
-      <section className="hero-section text-center">
+      <section className="hero-section text-center position-relative">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-lg-9">
@@ -136,10 +188,23 @@ const Home = () => {
 
               <p style={{
                 fontSize: '1.15rem', color: 'var(--text-secondary)',
-                maxWidth: '560px', margin: '0 auto 2.5rem', lineHeight: 1.7
+                maxWidth: '560px', margin: '0 auto 2rem', lineHeight: 1.7
               }}>
                 Discover verified rental houses and flats in prime locations across Bangladesh. Simple, fast, and secure.
               </p>
+
+              {/* Floating Pill Badges */}
+              <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
+                <span className="badge bg-white bg-opacity-50 text-dark border px-3 py-2 rounded-pill shadow-sm">
+                  ⚡ 500+ Verified Listings
+                </span>
+                <span className="badge bg-white bg-opacity-50 text-dark border px-3 py-2 rounded-pill shadow-sm">
+                  ⭐ 4.9/5 Rating
+                </span>
+                <span className="badge bg-white bg-opacity-50 text-dark border px-3 py-2 rounded-pill shadow-sm">
+                  🔒 Verified Owners
+                </span>
+              </div>
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 {!user && (
@@ -231,29 +296,76 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ── Property Grid ── */}
-      <div className="container" style={{ marginTop: '4rem', marginBottom: '4rem' }}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 style={{ fontWeight: 800, margin: 0, fontSize: '1.75rem', color: 'var(--text-primary)' }}>
-            Featured Properties
-          </h2>
-          <span style={{
-            background: 'var(--card-bg)', backdropFilter: 'blur(10px)',
-            border: '1px solid var(--glass-border)', borderRadius: '50px',
-            padding: '6px 16px', fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-secondary)'
-          }}>
-            {properties.length} listing{properties.length !== 1 ? 's' : ''} found
-          </span>
+      {/* ── Toolbar: View Mode & Sorting ── */}
+      <div className="container" style={{ marginTop: '3.5rem', marginBottom: '4rem' }}>
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div className="d-flex align-items-center gap-3">
+            <h2 style={{ fontWeight: 800, margin: 0, fontSize: '1.75rem', color: 'var(--text-primary)' }}>
+              Featured Listings
+            </h2>
+            <span style={{
+              background: 'var(--card-bg)', backdropFilter: 'blur(10px)',
+              border: '1px solid var(--glass-border)', borderRadius: '50px',
+              padding: '4px 14px', fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-secondary)'
+            }}>
+              {sortedProperties.length} listing{sortedProperties.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="d-flex align-items-center gap-3 flex-wrap">
+            {/* Sort Dropdown */}
+            <div className="d-flex align-items-center gap-2">
+              <span className="small text-muted fw-bold">Sort:</span>
+              <select
+                className="form-select form-select-sm form-control-custom"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{ width: 'auto' }}
+              >
+                <option value="default">Featured First</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rooms">Most Rooms</option>
+              </select>
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+                onClick={() => setViewMode('grid')}
+              >
+                <i className="fa-solid fa-grip me-1"></i> Grid
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${viewMode === 'map' ? 'btn-primary-custom' : 'btn-secondary-custom'}`}
+                onClick={() => setViewMode('map')}
+              >
+                <i className="fa-solid fa-map-location-dot me-1"></i> Map View
+              </button>
+            </div>
+          </div>
         </div>
 
+        {/* Loading State: Skeleton Shimmer Cards */}
         {loading ? (
-          <div className="text-center py-5">
-            <div className="spinner-border" role="status" style={{ color: 'var(--primary-color)', width: '3rem', height: '3rem' }}>
-              <span className="visually-hidden">Loading...</span>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '1rem' }}>Loading properties...</p>
+          <div className="row g-4">
+            {[1, 2, 3].map(n => (
+              <div key={n} className="col-md-6 col-lg-4">
+                <div className="card border-0 p-3 h-100" style={{ borderRadius: 'var(--radius-lg)', background: 'var(--card-bg)' }}>
+                  <div className="skeleton-box mb-3" style={{ height: '200px' }}></div>
+                  <div className="skeleton-box mb-2" style={{ height: '24px', width: '70%' }}></div>
+                  <div className="skeleton-box mb-3" style={{ height: '16px', width: '40%' }}></div>
+                  <div className="skeleton-box mb-3" style={{ height: '40px' }}></div>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : properties.length === 0 ? (
+        ) : viewMode === 'map' ? (
+          <MapView properties={sortedProperties} />
+        ) : sortedProperties.length === 0 ? (
           <div className="card text-center" style={{ padding: '4rem 2rem' }}>
             <i className="fa-regular fa-folder-open fa-4x" style={{ color: 'var(--text-secondary)', opacity: 0.4, marginBottom: '1.5rem' }}></i>
             <h4 style={{ fontWeight: 700, color: 'var(--text-primary)' }}>No Properties Found</h4>
@@ -264,72 +376,29 @@ const Home = () => {
           </div>
         ) : (
           <div className="row g-4">
-            {properties.map(property => {
-              const hasImage = property.main_image;
-              const imageSrc = hasImage ? (property.main_image.startsWith('http') ? property.main_image : `${IMAGE_BASE_URL}${property.main_image}`) : null;
-
-              return (
-                <div key={property.property_id} className="col-md-6 col-lg-4">
-                  <div className="property-card">
-                    <div className="property-img-wrapper">
-                      <span className="property-badge-type">{property.property_type}</span>
-                      <span className={`property-badge-status ${property.status === 'Available' ? 'bg-success' : 'bg-secondary'}`}>
-                        {property.status}
-                      </span>
-                      <span className="property-badge-rent">৳{Number(property.rent).toLocaleString()}/mo</span>
-
-                      {hasImage ? (
-                        <img src={imageSrc} className="property-img" alt={property.title} />
-                      ) : (
-                        <div style={{
-                          width: '100%', height: '100%', display: 'flex',
-                          alignItems: 'center', justifyContent: 'center',
-                          background: 'linear-gradient(135deg, var(--glass-bg), var(--card-bg))',
-                          color: 'var(--text-secondary)'
-                        }}>
-                          <i className="fa-regular fa-image fa-3x" style={{ opacity: 0.4 }}></i>
-                        </div>
-                      )}
-
-                      {(!user || user.role === 'tenant') && (
-                        <button
-                          onClick={(e) => handleToggleFavorite(property.property_id, e)}
-                          className={`favorite-btn ${favorites[property.property_id] ? 'active' : ''}`}
-                          title={favorites[property.property_id] ? 'Remove Favorite' : 'Add Favorite'}
-                        >
-                          <i className={`fa-heart ${favorites[property.property_id] ? 'fa-solid' : 'fa-regular'}`}></i>
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="property-body">
-                      <h3 className="property-title">
-                        <Link to={`/property/${property.property_id}`}>{property.title}</Link>
-                      </h3>
-                      <div className="property-location">
-                        <i className="fa-solid fa-location-dot" style={{ color: 'var(--primary-color)' }}></i>{' '}
-                        {property.location}
-                      </div>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.6 }}>
-                        {property.description.length > 90
-                          ? `${property.description.substring(0, 90)}...`
-                          : property.description}
-                      </p>
-                      <div className="property-amenities">
-                        <span><i className="fa-solid fa-bed me-1" style={{ color: 'var(--primary-color)' }}></i>{property.rooms} Rooms</span>
-                        <span><i className="fa-solid fa-bath me-1" style={{ color: 'var(--primary-color)' }}></i>{property.bathrooms} Bathrooms</span>
-                      </div>
-                      <Link to={`/property/${property.property_id}`} className="btn btn-secondary-custom w-100 mt-3" style={{ padding: '0.7rem' }}>
-                        <i className="fa-solid fa-circle-info me-1"></i>View Details
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {sortedProperties.map(property => (
+              <div key={property.property_id} className="col-md-6 col-lg-4">
+                <PropertyCard
+                  property={property}
+                  isFavorite={favorites[property.property_id]}
+                  onToggleFavorite={handleToggleFavorite}
+                  isCompared={compareList.some(p => p.property_id === property.property_id)}
+                  onToggleCompare={handleToggleCompare}
+                  user={user}
+                  showToast={addToast}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Side-by-Side Compare Drawer */}
+      <CompareDrawer
+        compareList={compareList}
+        removeFromCompare={(id) => setCompareList(prev => prev.filter(p => p.property_id !== id))}
+        clearCompare={() => setCompareList([])}
+      />
     </div>
   );
 };
