@@ -8,6 +8,7 @@ const AuthContext = createContext(null);
 
 // Configure Axios defaults
 axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.timeout = 2500;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

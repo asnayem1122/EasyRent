@@ -30,18 +30,20 @@ async function runBrowserTest() {
 
   console.log('1️⃣ Navigating to Home Page...');
   await page.goto('https://asnayem1122.github.io/EasyRent/', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(3500);
   await page.screenshot({ path: path.join(screenshotDir, '1_home_page.png'), fullPage: true });
 
   console.log('2️⃣ Navigating to Property Details Page...');
   const propertyLink = page.locator('a[href*="/property/"]').first();
   if (await propertyLink.count() > 0) {
     await propertyLink.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(3500);
     await page.screenshot({ path: path.join(screenshotDir, '2_property_details.png'), fullPage: true });
   }
 
   console.log('3️⃣ Navigating to Login Page...');
   await page.goto('https://asnayem1122.github.io/EasyRent/login', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1000);
   await page.screenshot({ path: path.join(screenshotDir, '3_login_page.png'), fullPage: true });
 
   console.log('4️⃣ Testing Quick Login (Admin)...');
@@ -49,12 +51,13 @@ async function runBrowserTest() {
   if (await adminBtn.count() > 0) {
     await adminBtn.click();
     await page.click('button[type="submit"]');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(4000);
     await page.screenshot({ path: path.join(screenshotDir, '4_admin_dashboard.png'), fullPage: true });
   }
 
   console.log('5️⃣ Navigating to Register Page...');
   await page.goto('https://asnayem1122.github.io/EasyRent/register', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1000);
   await page.screenshot({ path: path.join(screenshotDir, '5_register_page.png'), fullPage: true });
 
   await browser.close();
