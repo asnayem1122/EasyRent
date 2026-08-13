@@ -11,8 +11,12 @@ dist/
 .vite/
 build/
 
-# Uploads
+# Uploads & Test Artifacts
 uploads/
+screenshots/
+.playwright/
+test_report.json
+test-pages.js
 
 # Logs
 *.log
@@ -30,5 +34,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
-# Lock files (tracked to ensure reproducible installs)

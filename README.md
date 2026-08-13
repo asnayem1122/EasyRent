@@ -1,6 +1,8 @@
 # 🏠 EasyRent
 
-**EasyRent** is a full-stack house & flat rental management platform built for the Bangladeshi market. It features a modern, immersive UI with fluid art backgrounds, glassmorphism cards, and full dark/light mode support.
+**EasyRent** is a modern full-stack house & flat rental management platform built for the Bangladeshi market. It features a modern, immersive UI with fluid art backgrounds, glassmorphism cards, dark/light mode support, and automated GitHub Pages deployment.
+
+🌐 **Live Demo**: [https://asnayem1122.github.io/EasyRent/](https://asnayem1122.github.io/EasyRent/)
 
 Built with the **PERN** stack — PostgreSQL, Express, React (Vite), Node.js.
 
@@ -8,41 +10,44 @@ Built with the **PERN** stack — PostgreSQL, Express, React (Vite), Node.js.
 
 ## ✨ Features
 
+### 🌐 Live Demo & GitHub Pages CI/CD
+- **Automated Deployment**: Single-branch (`master`) deployment via GitHub Actions (`.github/workflows/deploy.yml`).
+- **SPA Routing Support**: Client-side single-page application routing with `404.html` redirection fallback so direct route links (`/login`, `/dashboard`) work seamlessly on GitHub Pages.
+- **Offline / Demo Dataset**: Built-in mock dataset allowing visitors to test all features live online without requiring a local database.
+
 ### 🔐 Authentication & Roles
 - JWT-based stateless authentication with Bcrypt password hashing
-- Three distinct roles — **Admin**, **Property Owner**, and **Tenant** — each with their own dashboard and access controls
+- Three distinct roles — **Admin**, **Property Owner**, and **Tenant** — each with tailored dashboards and permission controls.
+- **Quick Login**: One-click demo credentials for instant testing as Admin, Owner, or Tenant.
 
 ### 🏡 Property Management
 - Owners can submit new property listings with image uploads (via Multer)
 - Admins review and approve/reject submissions before they go live
-- Full CRUD — edit and delete listings at any time
+- Full CRUD — edit, update, and delete listings at any time
 
 ### 🔍 Smart Search & Filtering
 - Filter properties by **location**, **type** (House/Flat), **number of rooms**, and **rent budget range**
-- Results update instantly without page reloads
+- Real-time search updating instantly without full-page reloads
 
-### ❤️ Favorites
-- Tenants can save and unsave their favourite properties with a single click
-
-### 💬 Inquiry System
-- Tenants can submit inquiries on property listings
-- Owners and Admins can track all incoming inquiries from the dashboard
+### ❤️ Favorites & Inquiries
+- Tenants can save favourite properties with a single click
+- Send inquiry messages directly to property owners from the details page
 
 ### 🌙 Dark / Light Mode
-- Fluid art animated backgrounds (glowing colour blobs) that adapt to the theme
-- Full Bootstrap override ensures zero white bleed in dark mode
+- Fluid art animated backgrounds (glowing color blobs) that adapt to the active theme
+- Bootstrap overrides ensuring clean contrast in dark mode
 
 ---
 
-## 🎨 UI / Design
+## 🎨 UI / Design System
 
 The interface features a premium, modern aesthetic:
 
-- **Fluid Art Backgrounds** — Large, blurred, animated radial gradient "blobs" give the page a vivid painting-like feel
-- **Glassmorphism** — All cards, the navbar, sidebars, and search panels use `backdrop-filter: blur()` for a frosted glass look
-- **Typography** — [Outfit](https://fonts.google.com/specimen/Outfit) font for a clean, modern feel across all text
-- **Dark Mode** — Pitch black canvas with Electric Cyan + Emerald glowing blobs; strong, masculine, and easy on the eyes
-- **Light Mode** — Crisp white canvas with Azure Blue + Amber blobs; clean and bright
+- **Fluid Art Backgrounds** — Animated radial gradient blobs giving the page a vivid painting-like feel
+- **Glassmorphism** — Navbar, cards, and search panels use `backdrop-filter: blur(10px)` frosted glass styling
+- **Typography** — Google Fonts ([Outfit](https://fonts.google.com/specimen/Outfit)) for modern, readable UI text
+- **Dark Mode** — Charcoal canvas with Electric Cyan + Emerald glowing accents
+- **Light Mode** — Clean white canvas with Azure Blue + Amber accents
 
 ---
 
@@ -50,10 +55,14 @@ The interface features a premium, modern aesthetic:
 
 ```
 EasyRent/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml        # GitHub Actions automated deployment to GitHub Pages
+│
 ├── backend/                  # Express.js REST API
 │   ├── config/               # PostgreSQL pool configuration
 │   ├── controllers/          # Route handlers (auth, properties, inquiries)
-│   ├── middleware/            # JWT auth guard & role-based access
+│   ├── middleware/           # JWT auth guard & role-based access
 │   ├── routes/               # API endpoint definitions
 │   ├── uploads/              # Uploaded property images (served statically)
 │   ├── database.sql          # Full PostgreSQL schema
@@ -61,14 +70,18 @@ EasyRent/
 │   └── server.js             # Express app entry point (port 5000)
 │
 └── frontend/                 # Vite + React SPA
+    ├── public/
+    │   └── 404.html          # SPA route restoration fallback for GitHub Pages
     ├── src/
     │   ├── components/       # Header, Footer, Sidebar
-    │   ├── context/          # AuthContext (JWT) & ThemeContext (dark/light)
+    │   ├── context/          # AuthContext (JWT & demo auth) & ThemeContext
+    │   ├── mockData.js       # Demo dataset for static online hosting
     │   ├── pages/            # Home, Login, Register, Dashboard, PropertyDetails, EditProperty
-    │   ├── App.jsx           # React Router v6 route definitions
-    │   ├── index.css         # Full custom CSS design system (glassmorphism + fluid art)
-    │   └── App.css           # App-level overrides
-    └── index.html
+    │   ├── App.jsx           # React Router route definitions (with basename support)
+    │   ├── config.js         # API URL normalization
+    │   └── index.css         # Custom CSS design system
+    ├── index.html
+    └── vite.config.js        # Vite base path configuration (/EasyRent/)
 ```
 
 ---
@@ -77,7 +90,7 @@ EasyRent/
 
 ### Prerequisites
 - Node.js v18+
-- PostgreSQL 14+
+- PostgreSQL 14+ (for full local PERN stack running)
 - npm
 
 ---
@@ -91,7 +104,7 @@ cd EasyRent
 
 ---
 
-### Step 2 — Database Setup
+### Step 2 — Database Setup (For Full Stack Local Development)
 
 Make sure PostgreSQL is running, then create the database:
 
@@ -123,42 +136,39 @@ JWT_SECRET=your_jwt_secret_key
 
 ### Step 4 — Install & Seed
 
-From the **project root**, a single command installs everything and sets up the database:
+From the **project root**, a single command installs dependencies and seeds demo data:
 
 ```bash
-npm install     # Installs root + backend + frontend deps
-npm run seed    # Creates tables & inserts demo data
+npm install     # Installs root + backend + frontend dependencies
+npm run seed    # Creates DB tables & inserts demo data
 ```
 
 ---
 
-### Step 5 — Run
+### Step 5 — Run Locally
 
 ```bash
 npm start       # Starts backend (port 5000) + frontend (port 5173) concurrently
 ```
 
-Or run them separately:
+Or run frontend only:
 
 ```bash
-# Terminal 1 — Backend (http://localhost:5000)
-cd backend && npm run dev
-
-# Terminal 2 — Frontend (http://localhost:5173)
-cd frontend && npm run dev
+cd frontend
+npm run dev
 ```
 
 ---
 
 ## 🔑 Demo Accounts
 
-After seeding, log in with these test credentials:
+Log in with these test credentials on the live site or local build:
 
 | Role | Email | Password |
 |------|-------|----------|
-| 🔴 Admin | `admin@easyrent.com` | `admin123` |
-| 🔵 Owner | `owner@easyrent.com` | `owner123` |
-| 🟢 Tenant | `tenant@easyrent.com` | `tenant123` |
+| 🔴 **Admin** | `admin@easyrent.com` | `admin123` |
+| 🔵 **Owner** | `owner@easyrent.com` | `owner123` |
+| 🟢 **Tenant** | `tenant@easyrent.com` | `tenant123` |
 
 ---
 
@@ -166,25 +176,12 @@ After seeding, log in with these test credentials:
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 18, Vite, React Router v6, Axios |
+| **Frontend** | React 19, Vite 8, React Router v7, Axios |
 | **Styling** | Vanilla CSS, Glassmorphism, FontAwesome 6, Google Fonts (Outfit) |
+| **Deployment** | GitHub Actions, GitHub Pages, SPA Redirects |
 | **Backend** | Node.js, Express.js, Multer |
 | **Database** | PostgreSQL, `pg` connection pool |
 | **Auth** | JSON Web Tokens (JWT), Bcrypt |
-| **Dev Tools** | Nodemon, Concurrently |
-
----
-
-## 📸 Pages Overview
-
-| Page | Description |
-|------|-------------|
-| **Home** | Property listing grid with hero section and advanced search/filter panel |
-| **Login / Register** | Glassmorphic auth cards with role selection |
-| **Property Details** | Full property info, image gallery, and inquiry form |
-| **Dashboard (Admin)** | Approve/reject listings, manage users, view all inquiries |
-| **Dashboard (Owner)** | Add new listings, manage own properties, track inquiries |
-| **Dashboard (Tenant)** | View favourite properties and submitted inquiries |
 
 ---
 
