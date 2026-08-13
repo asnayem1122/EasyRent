@@ -14,7 +14,7 @@ import EditProperty from './pages/EditProperty';
 function App() {
   return (
     <ThemeProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <AuthProvider>
         <div className="d-flex flex-column min-vh-100">
           <Header />
