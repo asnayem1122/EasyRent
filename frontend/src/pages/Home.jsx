@@ -179,8 +179,9 @@ const Home = () => {
                 padding: '6px 18px', marginBottom: '1.5rem',
                 fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600
               }}>
-                <span style={{ color: '#10b981' }}>●</span> Bangladesh's Premier Rental Platform
+                <span className="pulse-dot" style={{ color: '#10b981' }}>●</span> Bangladesh's Premier Rental Platform
               </div>
+
 
               <h1 style={{
                 fontWeight: 800, fontSize: 'clamp(2.4rem, 5vw, 4rem)',
@@ -328,7 +329,8 @@ const Home = () => {
       </div>
 
       {/* ── Toolbar: View Mode & Sorting ── */}
-      <div className="container" style={{ marginTop: '3.5rem', marginBottom: '4rem' }}>
+      <div className="container" id="featured-listings" style={{ marginTop: '3.5rem', marginBottom: '4rem' }}>
+
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div className="d-flex align-items-center gap-3">
             <h2 style={{ fontWeight: 800, margin: 0, fontSize: '1.75rem', color: 'var(--text-primary)' }}>

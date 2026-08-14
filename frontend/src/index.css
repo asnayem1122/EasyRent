@@ -644,8 +644,31 @@ footer { margin-top: auto; padding: 2rem 0; text-align: center; color: var(--tex
     color: var(--text-primary);
 }
 
-/* Any leftover white in page sections */
-/* ==================== NOR.MA FLOATING GLASS DOCK NAVBAR ==================== */
+/* Pulsing Blinking Dot Keyframes */
+@keyframes pulseGlow {
+    0% { opacity: 0.3; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 8px currentColor); }
+    100% { opacity: 0.3; transform: scale(0.92); }
+}
+
+.pulse-dot {
+    animation: pulseGlow 1.8s infinite ease-in-out;
+    display: inline-block;
+}
+
+.eyebrow-badge {
+    animation: fadeInDim 3s infinite ease-in-out alternate;
+}
+
+@keyframes fadeInDim {
+    0% { opacity: 0.75; }
+    100% { opacity: 1; }
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
 .dock-navbar-wrapper {
     position: fixed;
     top: 20px;

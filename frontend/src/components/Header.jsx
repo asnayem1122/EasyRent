@@ -14,13 +14,33 @@ const Header = () => {
     navigate('/');
   };
 
+  const handleExploreClick = (e) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      const elem = document.getElementById('featured-listings');
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      navigate('/');
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const isLinkActive = (path) => location.pathname === path ? 'active-dock' : '';
 
   return (
     <header className="dock-navbar-wrapper">
       <div className="dock-navbar">
         {/* Brand Logo Pill */}
-        <Link to="/" className="dock-logo">
+        <Link to="/" onClick={handleLogoClick} className="dock-logo">
           <i className="fa-solid fa-house-chimney text-primary me-2"></i>
           <span>EasyRent</span>
           <span className="dock-bd-badge ms-2">🇧🇩 BD</span>
@@ -28,9 +48,9 @@ const Header = () => {
 
         {/* Center Navigation Links */}
         <nav className="dock-nav-items">
-          <Link to="/" className={`dock-item ${isLinkActive('/')}`}>
+          <a href="/#featured-listings" onClick={handleExploreClick} className={`dock-item ${isLinkActive('/')}`}>
             <i className="fa-solid fa-compass me-1"></i>Explore
-          </Link>
+          </a>
           {user && (
             <Link to="/dashboard" className={`dock-item ${isLinkActive('/dashboard')}`}>
               <i className="fa-solid fa-gauge me-1"></i>Dashboard
